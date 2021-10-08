@@ -59,9 +59,12 @@ def packet_helper(packet, packet_num):
         if ip_proto == 6:
 # PARSE TCP HEADER =====================================================================================================
             # Unpack TCP Header using struct.unpack
-            tcp_hdr_len = eth_hdr_len + ip_hdr_len
-            tcp_hdr = packet[tcp_hdr_len:tcp_hdr_len + 20]
+            tcp_hdr_offset = eth_hdr_len + ip_hdr_len
+            tcp_hdr = packet[tcp_hdr_offset:tcp_hdr_offset + 20]
             tcp = struct.unpack('!HHLLBBHHH', tcp_hdr)
+
+            # Get TCP Header length using bit shift
+            tcp_hdr_len = tcp[4] >> 4
 
             # Grab source/destination TCP ports
             tcp_src_port = tcp[0]
@@ -69,18 +72,15 @@ def packet_helper(packet, packet_num):
 # ======================================================================================================================
 # PARSE DATA PAYLOAD ===================================================================================================
             # Calculate full header length
-            header_len = eth_hdr_len + ip_hdr_len + tcp_hdr_len
-
-            # Calculate data payload size
-            data_payload_len = len(packet) - header_len
+            header_len = eth_hdr_len + ip_hdr_len + tcp_hdr_len * 4
 
             # Extract packet data
-            data_payload = packet[data_payload_len:]
+            data_payload = packet[header_len:]
 # ======================================================================================================================
 # EXTRACT HTTP REQUESTS ================================================================================================
-    data = str(data_payload)
-    if "HTTP" or "GET" in data:
-        clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data_payload)
+    data = str(data_payload)[2:-1]
+    if data and ("HTTP" or "GET") in data:
+        clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data)
 # ======================================================================================================================
 
 
