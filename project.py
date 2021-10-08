@@ -132,6 +132,7 @@ if __name__ == "__main__":
     print("You have selected: " + str(deviceNum) + "\n")
     print("Press CTRL+C to exit the program at any time.")
     print("Currently sniffing network traffic on [" + device.upper() + "]...")
+    print()
 
     # Open device
     #   Arg 1: Device
