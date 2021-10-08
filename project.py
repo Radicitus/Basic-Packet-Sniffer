@@ -9,11 +9,50 @@ def ethernet_address(raw_addr):
     return addr
 
 
+# Helper function to break down data inside the packet and convert it to readable form
+def packet_helper(packet, packet_num):
+# VARS =================================================================================================================
+    # Ethernet
+    eth_hdr_len = 14
 
+    # IP
+    ip_hdr_len = 20
+    ip_src = ""
+    ip_dest = ""
+
+    # TCP
+    tcp_hdr_len = -1
+    tcp_src_port = ""
+    tcp_dest_port = ""
+# ======================================================================================================================
+# PARSE ETHERNET HEADER ================================================================================================
+    # Unpack Ethernet header data using struct.unpack
+    eth_hdr = packet[:eth_hdr_len]
+    eth = struct.unpack('!6s6sH', eth_hdr)
+    eth_dest_mac = ethernet_address(packet[0:6])
+    eth_src_mac = ethernet_address(packet[6:12])
+
+    # Grab ethernet protocol using socket library
+    eth_proto = socket.ntohs(eth[2])
+# ======================================================================================================================
+    if eth_proto == 8:
+# PARSE IP HEADER ======================================================================================================
+        # Unpack IP Header data using struct.unpack
+        ip_hdr = packet[eth_hdr_len:ip_hdr_len + eth_hdr_len]
+        ip = struct.unpack('!BBHHHBBH4s4s', ip_hdr)
+
+        # Grab IP Protocol to check later if TCP
+        ip_proto = ip[6]
+
+        # Grab source/destination IP addresses using socket library
+        ip_src = socket.inet_ntoa(ip[8])
+        ip_dest = socket.inet_ntoa(ip[9])
+# ======================================================================================================================
+        if ip_proto == 6:
 
 
 if __name__ == "__main__":
-    # DEVICE SELECTION =================================================================================================
+# DEVICE SELECTION =====================================================================================================
     # Find all available devices
     devList = pcapy.findalldevs()
 
@@ -33,17 +72,20 @@ if __name__ == "__main__":
     #   Arg 3: Promiscious Mode - Set to True
     #   Arg 4: Timeout - In milliseconds
     capture = pcapy.open_live(device, 65536, True, 0)
-    # ==================================================================================================================
-    # PACKET SNIFFING ==================================================================================================
+# ======================================================================================================================
+# PACKET SNIFFING ======================================================================================================
     # Set filter to reduce unwanted traffic
     capture.setfilter("tcp port 80")
 
     # Start packet sniffing
+    packet_num = 1
     while True:
         # Capture the next packet header and packet data
         header, packet = capture.next()
 
-        # Call the packet_helper function to get required data
-        packet_helper(packet)
+        # Call the packet_helper function to get/print required data
+        packet_helper(packet, packet_num)
 
-    # ==================================================================================================================
+        # Increment counter
+        packet_num += 1
+# ======================================================================================================================
