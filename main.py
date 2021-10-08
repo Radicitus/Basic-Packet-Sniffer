@@ -26,6 +26,7 @@ def main():
     #   timeout (in milliseconds)
     '''
     cap = pcapy.open_live(dev, 65536, True, 0)
+    cap.setfilter("tcp port 80")
 
     # start sniffing packets
     while (1):

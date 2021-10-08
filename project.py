@@ -2,8 +2,17 @@ import socket
 import struct
 import pcapy
 
-if __name__ == "__main__":
 
+# Convert to readable ethernet address
+def ethernet_address(raw_addr):
+    addr = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (raw_addr[0], raw_addr[1], raw_addr[2], raw_addr[3], raw_addr[4], raw_addr[5])
+    return addr
+
+
+
+
+
+if __name__ == "__main__":
     # DEVICE SELECTION =================================================================================================
     # Find all available devices
     devList = pcapy.findalldevs()
@@ -25,6 +34,16 @@ if __name__ == "__main__":
     #   Arg 4: Timeout - In milliseconds
     capture = pcapy.open_live(device, 65536, True, 0)
     # ==================================================================================================================
+    # PACKET SNIFFING ==================================================================================================
+    # Set filter to reduce unwanted traffic
+    capture.setfilter("tcp port 80")
 
-    # START PACKET SNIFFING ============================================================================================
+    # Start packet sniffing
+    while True:
+        # Capture the next packet header and packet data
+        header, packet = capture.next()
 
+        # Call the packet_helper function to get required data
+        packet_helper(packet)
+
+    # ==================================================================================================================
