@@ -1,11 +1,9 @@
 import socket
 from struct import *
-import datetime
 import pcapy
-import sys
 
 
-def main(argv):
+def main():
     # list all devices
     devices = pcapy.findalldevs()
     print(devices)
@@ -27,12 +25,11 @@ def main(argv):
     #   promiscious mode (1 for true)
     #   timeout (in milliseconds)
     '''
-    cap = pcapy.open_live(dev, 65536, 1, 0)
+    cap = pcapy.open_live(dev, 65536, True, 0)
 
     # start sniffing packets
     while (1):
         (header, packet) = cap.next()
-        len = header.getcaplen()
         # print('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen()))
         parse_packet(packet)
 
@@ -125,4 +122,4 @@ def parse_packet(packet):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
