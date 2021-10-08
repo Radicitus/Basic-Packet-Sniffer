@@ -128,8 +128,10 @@ if __name__ == "__main__":
 
     # Prompt user for input
     deviceNum = int(input(input_string) or "0")
-    print("You have selected: " + str(deviceNum))
     device = devList[deviceNum]
+    print("You have selected: " + str(deviceNum) + "\n")
+    print("Press CTRL+C to exit the program at any time.")
+    print("Currently sniffing network traffic on [" + device.upper() + "]...")
 
     # Open device
     #   Arg 1: Device
