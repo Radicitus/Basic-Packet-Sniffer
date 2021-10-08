@@ -106,7 +106,7 @@ def packet_helper(packet, packet_num):
     data = str(data_payload)[2:-1]
 
     # Check if data is a HTTP response of request
-    if data and ("HTTP" or "GET") in data:
+    if data and ("HTTP" or "GET" or "HEAD" or "POST" or "PUT" or "DELETE" or "CONNECT" or "OPTIONS" or "TRACE") in data:
         clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data, packet_num)
 
         # If an HTTP response/request that sucessfully prints, increment by 1
