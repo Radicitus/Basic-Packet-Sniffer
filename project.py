@@ -9,8 +9,32 @@ def ethernet_address(raw_addr):
     return addr
 
 
-def clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data_payload):
-    print(str(data_payload))
+def clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data, num):
+    # Separate substrings by \r\n to get request/header lines
+    sliced_data = data.split("\\r\\n")
+
+    # Build the HTTP_line string from sliced data
+    HTTP_line = str(num) + " " + \
+                  str(ip_src) + ":" + \
+                  str(tcp_src_port) + " " + \
+                  str(ip_dest) + ":" + \
+                  str(tcp_dest_port) + " HTTP "
+
+    # Check if data is a HTTP Response or HTTP Request
+    if "GET" in sliced_data[0]:
+        HTTP_line += "Request"
+    else:
+        HTTP_line += "Response"
+    print(HTTP_line)
+
+    # Iterate through sliced data and print out header lines
+    line = 0
+    while sliced_data[line]:
+        print(sliced_data[line])
+        line += 1
+
+    # Print newline
+    print()
 
 
 # Helper function to break down data inside the packet and convert it to readable form
@@ -78,9 +102,17 @@ def packet_helper(packet, packet_num):
             data_payload = packet[header_len:]
 # ======================================================================================================================
 # EXTRACT HTTP REQUESTS ================================================================================================
+    # Ignore bit annotation to the string after conversion
     data = str(data_payload)[2:-1]
+
+    # Check if data is a HTTP response of request
     if data and ("HTTP" or "GET") in data:
-        clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data)
+        clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data, packet_num)
+
+        # If an HTTP response/request that sucessfully prints, increment by 1
+        return 1 + packet_num
+    # Else, don't increment by 1
+    return 0 + packet_num
 # ======================================================================================================================
 
 
@@ -117,8 +149,5 @@ if __name__ == "__main__":
         header, packet = capture.next()
 
         # Call the packet_helper function to get/print required data
-        packet_helper(packet, packet_num)
-
-        # Increment counter
-        packet_num += 1
+        packet_num = packet_helper(packet, packet_num)
 # ======================================================================================================================
