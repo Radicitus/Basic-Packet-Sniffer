@@ -1,7 +1,12 @@
 import pcapy
 
 
-def callback():
+def callback(h):
+    network = h.getnet()
+    mask = h.getmask()
+    link = h.datalink()
+    fd = h.getfd()
+    stats = h.stats()
     return
 
 
@@ -28,12 +33,10 @@ if __name__ == "__main__":
             # Set filter
             handle.setfilter('tcp port 80')
 
-            # Collect next packet
+            # Callback loop
+            handle.loop(10, callback(handle))
 
-            # Print response
-            network = handle.getnet()
-            link = handle.datalink()
-            dis = handle.dispatch()
+            # Collect next packet
 
     except KeyboardInterrupt:
         print("User manually ended loop.")
