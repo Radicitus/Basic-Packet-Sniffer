@@ -9,6 +9,10 @@ def ethernet_address(raw_addr):
     return addr
 
 
+def clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data_payload):
+    print(str(data_payload))
+
+
 # Helper function to break down data inside the packet and convert it to readable form
 def packet_helper(packet, packet_num):
 # VARS =================================================================================================================
@@ -24,6 +28,10 @@ def packet_helper(packet, packet_num):
     tcp_hdr_len = -1
     tcp_src_port = ""
     tcp_dest_port = ""
+
+    # Data Payload
+    data_payload_len = -1
+    data_payload = ""
 # ======================================================================================================================
 # PARSE ETHERNET HEADER ================================================================================================
     # Unpack Ethernet header data using struct.unpack
@@ -49,6 +57,31 @@ def packet_helper(packet, packet_num):
         ip_dest = socket.inet_ntoa(ip[9])
 # ======================================================================================================================
         if ip_proto == 6:
+# PARSE TCP HEADER =====================================================================================================
+            # Unpack TCP Header using struct.unpack
+            tcp_hdr_len = eth_hdr_len + ip_hdr_len
+            tcp_hdr = packet[tcp_hdr_len:tcp_hdr_len + 20]
+            tcp = struct.unpack('!HHLLBBHHH', tcp_hdr)
+
+            # Grab source/destination TCP ports
+            tcp_src_port = tcp[0]
+            tcp_dest_port = tcp[1]
+# ======================================================================================================================
+# PARSE DATA PAYLOAD ===================================================================================================
+            # Calculate full header length
+            header_len = eth_hdr_len + ip_hdr_len + tcp_hdr_len
+
+            # Calculate data payload size
+            data_payload_len = len(packet) - header_len
+
+            # Extract packet data
+            data_payload = packet[data_payload_len:]
+# ======================================================================================================================
+# EXTRACT HTTP REQUESTS ================================================================================================
+    data = str(data_payload)
+    if "HTTP" or "GET" in data:
+        clean_print(ip_src, ip_dest, tcp_src_port, tcp_dest_port, data_payload)
+# ======================================================================================================================
 
 
 if __name__ == "__main__":
